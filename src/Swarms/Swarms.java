@@ -589,7 +589,7 @@ public class Swarms extends MaxObject
 	JitterMatrix jm;
 
 	int N; // CANTIDAD DE AGENTES EN LA PANTALLA
-
+    double id[];
     double x[];
     double y[];
     double a[];
@@ -630,7 +630,7 @@ public class Swarms extends MaxObject
 
     // VARIABLES OUTLETS PARA SALIDA DE DATOS
     
-    int id ;
+
     double K ;
 
 // ----------------------------------
@@ -673,7 +673,7 @@ public class Swarms extends MaxObject
 	{
 
 	   	N = _N;
-
+		 id = new double[N];
 		 x = new double[N];
 		 y = new double[N];
        	 a = new double[N];
@@ -696,7 +696,7 @@ public class Swarms extends MaxObject
 		    x[n] = Math.random(); // POSICIÓN INICIAL EN X
 		    y[n] = Math.random(); // POSICIÓN INICIAL EN Y
 		    a[n] = 2*Math.PI*Math.random(); // A = ?? angulo?
-
+			id[n] = n;
 
 			 life[n] =0;
 			 z[n]= 0;
@@ -731,7 +731,6 @@ private void generateNewOutputMatrix()
 		if (jm != null)
 		jm.freePeer();
 		jm = new JitterMatrix(15, "float64", N, 1);
-		int id[] = new int[N];
 		
 		int dim[] = jm.getDim();
 
@@ -803,5 +802,7 @@ private void generateNewOutputMatrix()
 
 
     // =====================================
+
+
 
 
