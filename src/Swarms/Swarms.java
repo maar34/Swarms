@@ -604,6 +604,21 @@ public class Swarms extends MaxObject
     double mass[];
     double charge[];
 
+    double oldid[];
+    double oldx[];
+    double oldy[];
+    double olda[];
+    double oldlife[];
+    double oldz[];
+    double oldvx [];
+    double oldvy [];
+    double oldvz [];
+    double oldax [];
+    double olday [];
+    double oldaz [];
+    double oldmass[];
+    double oldcharge[];
+
     int L = 10; // Tama–o Circulo inicial???
     double u = 0.00005; // Velocidad Inicial
     double etaVicsek = 0.5;// Ruido Visek inicial
@@ -677,7 +692,6 @@ public class Swarms extends MaxObject
 		 x = new double[N];
 		 y = new double[N];
        	 a = new double[N];
-	
 		 life = new double[N];
 		 z = new double[N];
        	 vx = new double[N];
@@ -689,25 +703,52 @@ public class Swarms extends MaxObject
        	 mass = new double[N];
 		 charge = new double[N];
  
-
+		 oldid = new double[N];
+		 oldx = new double[N];
+		 oldy = new double[N];
+       	 olda = new double[N];
+		 oldlife = new double[N];
+		 oldz = new double[N];
+       	 oldvx = new double[N];
+		 oldvy = new double[N];
+		 oldvz = new double[N];
+       	 oldax = new double[N];     
+		 olday = new double[N];
+		 oldaz = new double[N];
+       	 oldmass = new double[N];
+		 oldcharge = new double[N];
 
 		for(int n = 0; n < N; ++n){
 
-		    x[n] = Math.random(); // POSICIîN INICIAL EN X
-		    y[n] = Math.random(); // POSICIîN INICIAL EN Y
-		    a[n] = 2*Math.PI*Math.random(); // A = ?? angulo?
-			id[n] = n;
+		x[n] = Math.random(); // POSICIîN INICIAL EN X
+		y[n] = Math.random(); // POSICIîN INICIAL EN Y
+		a[n] = 2*Math.PI*Math.random(); // A = ?? angulo?
+		id[n] = n;
+		life[n] =0;
+		z[n]= 0;
+       	vx[n] =0 ;
+		vy[n] =0;
+		vz[n] =0;
+       	ax[n] =0;     
+		ay[n] =0;
+		az[n] =0;
+       	mass[n] =0;
+		charge[n] =0;
 
-			 life[n] =0;
-			 z[n]= 0;
-       		 vx[n] =0 ;
-			 vy[n] =0;
-			 vz[n] =0;
-       		 ax[n] =0;     
-			 ay[n] =0;
-			 az[n] =0;
-       		 mass[n] =0;
-			 charge[n] =0;
+		oldx[n] = Math.random(); // POSICIîN INICIAL EN X
+		oldy[n] = Math.random(); // POSICIîN INICIAL EN Y
+		olda[n] = 2*Math.PI*Math.random(); // A = ?? angulo?
+		oldid[n] = n;
+		oldlife[n] =0;
+		oldz[n]= 0;
+       	oldvx[n] =0 ;
+		oldvy[n] =0;
+		oldvz[n] =0;
+       	oldax[n] =0;     
+		olday[n] =0;
+		oldaz[n] =0;
+       	oldmass[n] =0;
+		oldcharge[n] =0;
 
 		}
 
@@ -727,10 +768,13 @@ public class Swarms extends MaxObject
 private void generateNewOutputMatrix()
 	{
 		// ParticleMatrix (necessary planes: ID,life,x,y,z,vx,vy,vz,ax,ay,az,mass,charge)
+		// second row have de the last frame info
 
 		if (jm != null)
 		jm.freePeer();
-		jm = new JitterMatrix(15, "float64", N, 1);
+		jm = new JitterMatrix(15, "float64", N, 2);
+		
+		int offset[] = new int[] {0,1};
 		
 		int dim[] = jm.getDim();
 
@@ -749,8 +793,38 @@ private void generateNewOutputMatrix()
         jm.copyArrayToVectorPlanar(12,0,null,charge,dim[0],0);
         jm.copyArrayToVectorPlanar(13,0,null,a,dim[0],0);
 
+        jm.copyArrayToVectorPlanar(0,0,offset,oldid,dim[0],0);
+        jm.copyArrayToVectorPlanar(1,0,offset,oldlife,dim[0],0);
+        jm.copyArrayToVectorPlanar(2,0,offset,oldx,dim[0],0);
+        jm.copyArrayToVectorPlanar(3,0,offset,oldy,dim[0],0);
+        jm.copyArrayToVectorPlanar(4,0,offset,oldz,dim[0],0);
+        jm.copyArrayToVectorPlanar(5,0,offset,oldvx,dim[0],0);
+        jm.copyArrayToVectorPlanar(6,0,offset,oldvy,dim[0],0);
+        jm.copyArrayToVectorPlanar(7,0,offset,oldvz,dim[0],0);
+        jm.copyArrayToVectorPlanar(8,0,offset,oldax,dim[0],0);
+        jm.copyArrayToVectorPlanar(9,0,offset,olday,dim[0],0);
+        jm.copyArrayToVectorPlanar(10,0,offset,oldaz,dim[0],0);
+        jm.copyArrayToVectorPlanar(11,0,offset,oldmass,dim[0],0);
+        jm.copyArrayToVectorPlanar(12,0,offset,oldcharge,dim[0],0);
+        jm.copyArrayToVectorPlanar(13,0,offset,olda,dim[0],0);
+
 
 		outlet(0, "jit_matrix", jm.getName());
+		
+		System.arraycopy(id, 0, oldid, 0, id.length);
+		System.arraycopy(life, 0, oldlife, 0, life.length);
+		System.arraycopy(x, 0, oldx, 0, x.length);
+		System.arraycopy(y, 0, oldy, 0, y.length);
+		System.arraycopy(z, 0, oldz, 0, z.length);
+		System.arraycopy(vx, 0, oldvx, 0, vx.length);
+		System.arraycopy(vy, 0, oldvy, 0, vy.length);
+		System.arraycopy(vz, 0, oldvz, 0, vz.length);
+		System.arraycopy(ax, 0, oldax, 0, ax.length);
+		System.arraycopy(ay, 0, olday, 0, ay.length);
+		System.arraycopy(az, 0, oldaz, 0, az.length);
+		System.arraycopy(mass, 0, oldmass, 0, mass.length);
+		System.arraycopy(charge, 0, oldcharge, 0, charge.length);
+		System.arraycopy(a, 0, olda, 0, a.length);
 
 
 	} 
@@ -802,7 +876,6 @@ private void generateNewOutputMatrix()
 
 
     // =====================================
-
 
 
 
