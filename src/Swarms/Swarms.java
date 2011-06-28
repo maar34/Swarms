@@ -293,7 +293,7 @@ public class Swarms extends MaxObject
 	    			y[n] += L;
 	    		if(y[n] >= L)
 	    			y[n] -= L;
-	    
+	
 	    	}
 	    	return dens;
 	    }// Fin de updateVicsekChate
@@ -619,13 +619,16 @@ public class Swarms extends MaxObject
     double oldmass[];
     double oldcharge[];
 
+	double tx[];
+    double ty[];
+
     int L = 10; // Tama–o Circulo inicial???
     double u = 0.00005; // Velocidad Inicial
     double etaVicsek = 0.5;// Ruido Visek inicial
     double etaChate = 0.5; // Ruido Chate inicial
     double radius = 0.4; // Radius inicial
     
-    double psi,dens;
+    double psi,dens, avgX, avgY, avgA;
 
  
     Celda2D[][] C = new Celda2D[L][L];
@@ -718,6 +721,10 @@ public class Swarms extends MaxObject
        	 oldmass = new double[N];
 		 oldcharge = new double[N];
 
+
+		 tx = new double[N];
+		 ty = new double[N];
+
 		for(int n = 0; n < N; ++n){
 
 		x[n] = Math.random(); // POSICIîN INICIAL EN X
@@ -734,6 +741,9 @@ public class Swarms extends MaxObject
 		az[n] =0;
        	mass[n] =0;
 		charge[n] =0;
+
+		System.arraycopy(x, 0, tx, 0, x.length);
+		System.arraycopy(y, 0, ty, 0, y.length);
 
 		oldx[n] = Math.random(); // POSICIîN INICIAL EN X
 		oldy[n] = Math.random(); // POSICIîN INICIAL EN Y
@@ -780,8 +790,8 @@ private void generateNewOutputMatrix()
 
         jm.copyArrayToVectorPlanar(0,0,null,id,dim[0],0);
         jm.copyArrayToVectorPlanar(1,0,null,life,dim[0],0);
-        jm.copyArrayToVectorPlanar(2,0,null,x,dim[0],0);
-        jm.copyArrayToVectorPlanar(3,0,null,y,dim[0],0);
+        jm.copyArrayToVectorPlanar(2,0,null,tx,dim[0],0);
+        jm.copyArrayToVectorPlanar(3,0,null,ty,dim[0],0);
         jm.copyArrayToVectorPlanar(4,0,null,z,dim[0],0);
         jm.copyArrayToVectorPlanar(5,0,null,vx,dim[0],0);
         jm.copyArrayToVectorPlanar(6,0,null,vy,dim[0],0);
@@ -813,8 +823,8 @@ private void generateNewOutputMatrix()
 		
 		System.arraycopy(id, 0, oldid, 0, id.length);
 		System.arraycopy(life, 0, oldlife, 0, life.length);
-		System.arraycopy(x, 0, oldx, 0, x.length);
-		System.arraycopy(y, 0, oldy, 0, y.length);
+		System.arraycopy(tx, 0, oldx, 0, x.length);
+		System.arraycopy(ty, 0, oldy, 0, y.length);
 		System.arraycopy(z, 0, oldz, 0, z.length);
 		System.arraycopy(vx, 0, oldvx, 0, vx.length);
 		System.arraycopy(vy, 0, oldvy, 0, vy.length);
@@ -829,7 +839,28 @@ private void generateNewOutputMatrix()
 
 	} 
 
+private void calculateAverage()
+	{
+		double sumX=0;
+		double sumY=0;
+		double sumA=0;
+		for(int n = 0; n < N; ++n)
+		{
 
+		// Escalado de (0 - 10) - (-1 _ +1) 
+		tx[n] = (x[n]*0.2)-1;
+		ty[n] = (y[n]*0.2)-1;
+
+		sumX = sumX + tx[n];
+		sumY = sumY + ty[n];
+		sumA = sumA + a[n];
+
+		}
+		
+		avgX = sumX / x.length;
+		avgY = sumY / y.length;
+		avgA = sumA / a.length;
+	}
 
 	public void bang()
 	{
@@ -845,9 +876,9 @@ private void generateNewOutputMatrix()
 	Methods2D.updateCeldas(C,x,y);
 	dens = Methods2D.updateVicsekChate(C,x,y,a,radius,etaVicsek,etaChate,u);
 	psi = Methods2D.updatePsi(a);
+	calculateAverage();
 
-
-	outlet (1, new Atom[]{Atom.newAtom(psi), Atom.newAtom(dens)});
+	outlet (1, new Atom[]{Atom.newAtom(psi), Atom.newAtom(dens),Atom.newAtom(avgX),Atom.newAtom(avgY),Atom.newAtom(avgA)});
 
 	}
 	
@@ -876,6 +907,5 @@ private void generateNewOutputMatrix()
 
 
     // =====================================
-
 
 
