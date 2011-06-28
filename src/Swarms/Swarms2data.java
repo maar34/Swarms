@@ -8,6 +8,7 @@ public class Swarms2data extends MaxObject
 	JitterMatrix output = new JitterMatrix();
 	
 	public int[] dim;
+
     double id[]; 
 	double x[];
     double y[];
@@ -24,7 +25,7 @@ public class Swarms2data extends MaxObject
     double a[];
 
 	public int numberOfParticles = 0;
-
+	public int oldNumberOfParticles = 0;
 
 	private static final String[] OUTLET_ASSIST = new String[]{
 		"outlet 1 help"
@@ -34,6 +35,8 @@ public class Swarms2data extends MaxObject
 		declareIO(1,1);
 		setInletAssist(0, "input (matrix)");
 		setOutletAssist(OUTLET_ASSIST);
+
+	//	setOutletAssist(0, "output (matrix)");
 	}
     
 	public void jit_matrix(String mname)
@@ -75,13 +78,24 @@ public class Swarms2data extends MaxObject
 		a = new double[numberOfParticles];
         output.copyVectorToArrayPlanar(13,0,null,a,dim[0],0);
 
+		if (oldNumberOfParticles != numberOfParticles)
+		{
+		for (int i=0;i<oldNumberOfParticles;i++){
+		outletHigh(0,new Atom[]{Atom.newAtom("remove/"), Atom.newAtom(i)});
+		}
+		for (int i=0;i<numberOfParticles;i++){
+		outletHigh(0,new Atom[]{Atom.newAtom("add/"), Atom.newAtom(i)});
+		}
+		}
+
+		oldNumberOfParticles = numberOfParticles;
+
 		for (int i=0;i<dim[0];i++){
-		outletHigh(0,new Atom[]{Atom.newAtom(i),Atom.newAtom( x[i]),Atom.newAtom( y[i]) ,Atom.newAtom( a[i])});
+		outletHigh(0,new Atom[]{Atom.newAtom("update/"), Atom.newAtom(i),Atom.newAtom( x[i]),Atom.newAtom( y[i]) ,Atom.newAtom( a[i])});
 			}
 		}
 
 }
-
 
 
 
