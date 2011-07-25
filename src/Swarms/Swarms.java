@@ -3,6 +3,8 @@ package Swarms;
 
 import com.cycling74.max.*;
 import com.cycling74.jitter.*;
+import java.util.Random;
+
 
 public class Swarms extends MaxObject
 {
@@ -608,6 +610,7 @@ public class Swarms extends MaxObject
     double g[];
     double b[];
     double size[];
+    int type[];
 
 	int oldN;
     double oldid[];
@@ -629,9 +632,10 @@ public class Swarms extends MaxObject
     double oldg[];
     double oldb[];
     double oldsize[];
+    int oldtype[];
 
 	float agentColor[] = new float[] {0.f, 0.f, .0f, 0.f};
-	float argb [][]; //oldargb[][]
+
 	float agentSize[];
 
 
@@ -654,7 +658,7 @@ public class Swarms extends MaxObject
 
 
 // Variables de Atributos
-	private double velocity = 0.2;
+	private double velocity = 0.02;
 	private double radio= 0.2;
 	private double cNoise= 0.2;
 	private double vNoise= 0.2;
@@ -693,8 +697,9 @@ public class Swarms extends MaxObject
 		declareAttribute("cNoise"); 
 		declareAttribute("vNoise"); 
 
-		declareAttribute("agentSize");
-		declareAttribute("agentColor");	
+		declareAttribute("agentSize", null, "setAgentSize");
+		declareAttribute("agentColor", null, "setAgentColor");	
+		declareAttribute("agentType", null, "setAgentType");	
 
 		setInletAssist(INLET_ASSIST);
 		setOutletAssist(OUTLET_ASSIST);
@@ -730,6 +735,7 @@ public class Swarms extends MaxObject
     	 g = new double [N];
     	 b = new double [N];
      	 size = new double [N];
+     	 type = new int [N];
 
 		 oldid = new double[N];
 		 oldx = new double[N];
@@ -750,8 +756,8 @@ public class Swarms extends MaxObject
     	 oldg = new double [N];
     	 oldb = new double [N];
      	 oldsize = new double [N];
+     	 oldtype = new int [N];
 
-    	 argb = new float [N][4];
 
 		 agentSize  = new float [2];
 
@@ -775,7 +781,8 @@ public class Swarms extends MaxObject
 		az[n] =0;
        	mass[n] =0;
 		charge[n] =0;
-		
+		type[n] = 0;
+
 		oldx[n] = Math.random(); // POSICIîN INICIAL EN X
 		oldy[n] = Math.random(); // POSICIîN INICIAL EN Y
 		olda[n] = 2*Math.PI*Math.random(); // A = ?? angulo?
@@ -790,7 +797,8 @@ public class Swarms extends MaxObject
 		oldaz[n] =0;
        	oldmass[n] =0;
 		oldcharge[n] =0;
-		
+		oldtype[n] = 0;
+
 		// color y tama–o
 
 
@@ -826,7 +834,7 @@ private void generateNewOutputMatrix()
 
 		if (jm != null)
 		jm.freePeer();
-		jm = new JitterMatrix(19, "float64", N, 2);
+		jm = new JitterMatrix(20, "float64", N, 2);
 		
 		int offset[] = new int[] {0,1};
 		
@@ -851,6 +859,7 @@ private void generateNewOutputMatrix()
         jm.copyArrayToVectorPlanar(16,0,null,g,dim[0],0);
         jm.copyArrayToVectorPlanar(17,0,null,b,dim[0],0);
         jm.copyArrayToVectorPlanar(18,0,null,size,dim[0],0);
+        jm.copyArrayToVectorPlanar(19,0,null,type,dim[0],0);
 
         jm.copyArrayToVectorPlanar(0,0,offset,oldid,dim[0],0);
         jm.copyArrayToVectorPlanar(1,0,offset,oldlife,dim[0],0);
@@ -871,7 +880,7 @@ private void generateNewOutputMatrix()
         jm.copyArrayToVectorPlanar(16,0,offset,oldg,dim[0],0);
         jm.copyArrayToVectorPlanar(17,0,offset,oldb,dim[0],0);
         jm.copyArrayToVectorPlanar(18,0,offset,oldsize,dim[0],0);
-
+        jm.copyArrayToVectorPlanar(19,0,offset,oldtype,dim[0],0);
 
 		outlet(0, "jit_matrix", jm.getName());
 		
@@ -889,11 +898,14 @@ private void generateNewOutputMatrix()
 		System.arraycopy(mass, 0, oldmass, 0, mass.length);
 		System.arraycopy(charge, 0, oldcharge, 0, charge.length);
 
+		System.arraycopy(a, 0, olda, 0, a.length);
+
 		System.arraycopy(alpha, 0, oldalpha, 0, alpha.length);
 		System.arraycopy(r, 0, oldr, 0, r.length);
 		System.arraycopy(g, 0, oldg, 0, g.length);
 		System.arraycopy(b, 0, oldb, 0, b.length);
 
+		System.arraycopy(type, 0, oldtype, 0, type.length);
 
 
 	} 
@@ -921,7 +933,7 @@ private void calculateAverage()
 		avgA = sumA / a.length;
 	}
 
-	private void setColor(float[] _agentColor)
+	private void setAgentColor(float[] _agentColor)
 	{
 
 
@@ -932,10 +944,10 @@ private void calculateAverage()
 	int agentChange = (int)_agentColor[0]; // agentID
 			if (agentChange >= 0 && agentChange < N )// limites de id
 				{
-				r[agentChange]= _agentColor[2];
-				g[agentChange]= _agentColor[3];
-				b[agentChange]= _agentColor[4];
-				alpha[agentChange]= _agentColor[1];
+				r[agentChange]= _agentColor[1];
+				g[agentChange]= _agentColor[2];
+				b[agentChange]= _agentColor[3];
+				alpha[agentChange]= _agentColor[4];
 
 			}
 		
@@ -951,12 +963,32 @@ private void calculateAverage()
 				alpha[i]= _agentColor[3];
 
 				}
-			}
+			}	
+	}
+
+	public void randomColor()
+	{
+
+
+
+	Random randC = new Random();
+
+		for(int i=0; i<r.length; i++)
+				{
+
+				r[i]= (float)randC.nextGaussian();
+				g[i]= (float)randC.nextGaussian();
+				b[i]= (float)randC.nextGaussian();
+				alpha[i]= (float)randC.nextGaussian();
+				
+
+
+				}
+
 	}
 
 
-
-	private void setSize( float[] _agentSize)
+	private void setAgentSize( float[] _agentSize)
 	{
 
 
@@ -998,6 +1030,83 @@ private void calculateAverage()
 
 	}
 
+	public void randomSize()
+	{
+
+
+
+	Random randS = new Random();
+
+		for(int i=0; i<r.length; i++)
+				{
+
+				size[i]= 1.f + Math.abs((float)randS.nextGaussian())*30;
+
+
+				}
+
+	}
+	public void setAgentType(float[] _agentType)
+	{
+
+	if (_agentType.length == 2)
+		{
+
+		if (_agentType[1] >= 0 )// limites de valor
+			{
+
+			if (_agentType[0] >= 0 && _agentType[0] < N ) // limites de id
+				{
+				type [(int)_agentType[0]] =  (int)_agentType[1];
+			
+				}
+			}
+		}
+
+
+	if (_agentType.length == 1)
+		{
+
+		if (_agentType[0] >= 0 )// limites de valor	
+			{
+
+
+		for(int i=0; i<type.length; i++)
+   			 	{
+		type[i]= (int)_agentType[0];
+
+				}
+
+		
+			}
+		}
+
+	
+	}
+	public void randomType()
+	{
+
+
+
+	Random randT = new Random();
+
+		for(int i=0; i<r.length; i++)
+				{
+
+				type[i]= (int)(Math.abs(randT.nextGaussian())*3);
+
+
+				}
+
+	}
+
+
+	public void getNumberOfParticles()
+	{
+	outlet (1, new Atom[]{Atom.newAtom("numberOfParticles/"), Atom.newAtom(N)});
+	}
+
+
 	public void bang()
 	{
 
@@ -1013,23 +1122,12 @@ private void calculateAverage()
 	psi = Methods2D.updatePsi(a);
 	calculateAverage();
 
-
-	setColor (agentColor);
-	
-	setSize (agentSize);
-
-
-
 	outlet (1, new Atom[]{Atom.newAtom(psi), Atom.newAtom(dens),Atom.newAtom(avgX),Atom.newAtom(avgY),Atom.newAtom(avgA)});
 	
 	oldN = N; 
 
 	}
 
-	public void getNumberOfParticles()
-	{
-	outlet (1, new Atom[]{Atom.newAtom("numberOfParticles/"), Atom.newAtom(N)});
-	}
 	
 
     
@@ -1052,12 +1150,7 @@ private void calculateAverage()
     
 }
 
-
-
-
-
     // =====================================
-
 
 
 
